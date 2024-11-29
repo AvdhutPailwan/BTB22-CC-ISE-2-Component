@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Register</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .container {
+      width: 100%;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .form-group input:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+    .form-group button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .form-group button:hover {
+      background-color: #0056b3;
+    }
+    .error {
+      color: red;
+      text-align: center;
+    }
+    #user-list {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    #user-list h3 {
+      text-align: center;
+    }
+    #user-list ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    #user-list li {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+    #user-list li:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Register Form -->
+  <div class="container" id="register-container">
+    <h2>Register</h2>
+    <form id="register-form">
+      <div class="form-group">
+        <label for="register-username">Username</label>
+        <input type="text" id="register-username" name="username" required>
+      </div>
+      <div class="form-group">
+        <label for="register-password">Password</label>
+        <input type="password" id="register-password" name="password" required>
+      </div>
+      <div class="form-group">
+        <button type="submit">Register</button>
+      </div>
+      <div class="error" id="register-error"></div>
+    </form>
+  </div>
+
+  <!-- Login Form -->
+  <div class="container" id="login-container">
+    <h2>Login</h2>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="login-username">Username</label>
+        <input type="text" id="login-username" name="username" required>
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" name="password" required>
+      </div>
+      <div class="form-group">
+        <button type="submit">Login</button>
+      </div>
+      <div class="error" id="login-error"></div>
+    </form>
+  </div>
+
+  <!-- User List Section -->
+  <div id="user-list" class="container">
+    <h3>User List</h3>
+    <ul id="user-list-items">
+      <!-- List of usernames and passwords will be dynamically inserted here -->
+    </ul>
+  </div>
+
+  <script>
+    // Function to fetch and display the user data
+    async function fetchUserData() {
+      try {
+        const response = await fetch('http://localhost:3000/');
+        const data = await response.json();
+
+        if (response.ok) {
+          const userList = document.getElementById('user-list-items');
+          userList.innerHTML = ''; // Clear previous list
+
+          // Populate the list with the latest data
+          data.forEach(user => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `Username: ${user.username}, Password: ${user.password}`;
+            userList.appendChild(listItem);
+          });
+        } else {
+          console.error('Failed to fetch user data.');
+        }
+      } catch (error) {
+        console.error('An error occurred while fetching user data:', error);
+      }
+    }
+
+    // Handle Register Form Submission
+    const registerForm = document.getElementById('register-form');
+    const registerError = document.getElementById('register-error');
+
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();  // Prevent form submission
+
+      const username = document.getElementById('register-username').value;
+      const password = document.getElementById('register-password').value;
+
+      try {
+        const response = await fetch('http://localhost:3000/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Registration successful!');
+          fetchUserData(); // Fetch and display the latest user data after registration
+        } else {
+          registerError.textContent = data.message || 'Registration failed. Please try again.';
+        }
+      } catch (error) {
+        registerError.textContent = 'An error occurred while registering.';
+      }
+    });
+
+    // Handle Login Form Submission
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();  // Prevent form submission
+
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const response = await fetch('http://localhost:3000/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Login successful!');
+          fetchUserData(); // Fetch and display the latest user data after login
+        } else {
+          loginError.textContent = data.message || 'Login failed. Please check your credentials.';
+        }
+      } catch (error) {
+        loginError.textContent = 'An error occurred while logging in.';
+      }
+    });
+
+    // Initial data fetch when page loads
+    fetchUserData();
+  </script>
+
+</body>
+</html>
