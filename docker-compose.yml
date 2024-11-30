@@ -32,14 +32,15 @@ services:
     image: httpd
 
   node:
-    image: node:22-alpine
-    volumes:
-      - ./backend:/usr/src/app
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - 3000:3000
-    working_dir: /usr/src/app
-    command: npm start
+    volumes:
+      - ./backend:/usr/src/app
     environment:
       - NODE_ENV=development
+    restart: unless-stopped
     depends_on:
       - postgres
